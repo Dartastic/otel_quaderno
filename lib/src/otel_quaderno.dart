@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_quaderno_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_quaderno';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class QuadernoResult {
+  /// Creates a result.
   const QuadernoResult({
     this.itemCount,
     this.documentId,
@@ -69,8 +70,13 @@ class QuadernoResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class QuadernoCallResult<T> {
+  /// Creates a call result.
   const QuadernoCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final QuadernoResult? result;
 }
@@ -99,32 +105,32 @@ Future<T> tracedQuaderno<T>({
   final span = _tracer().startSpan(
     'quaderno $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.itemCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'quaderno.item_count',
           r.result!.itemCount!,
         ));
       }
       if (r.result!.documentId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'quaderno.document.id',
           r.result!.documentId!,
         ));
       }
       if (r.result!.kind != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'quaderno.document.kind',
           r.result!.kind!,
         ));
       }
       if (r.result!.state != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'quaderno.document.state',
           r.result!.state!,
         ));
@@ -136,55 +142,55 @@ Future<T> tracedQuaderno<T>({
         }
       }
       if (r.result!.taxRegime != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'quaderno.tax_regime',
           r.result!.taxRegime!,
         ));
       }
       if (r.result!.country != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'quaderno.country',
           r.result!.country!,
         ));
       }
       if (r.result!.vatNumberValid != null) {
-        extras.add(OTel.attributeBool(
+        extras.add(OTelAPI.attributeBool(
           'quaderno.vat_number.valid',
           r.result!.vatNumberValid!,
         ));
       }
       if (r.result!.b2b != null) {
-        extras.add(OTel.attributeBool(
+        extras.add(OTelAPI.attributeBool(
           'quaderno.b2b',
           r.result!.b2b!,
         ));
       }
       if (r.result!.evidenceCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'quaderno.evidence_count',
           r.result!.evidenceCount!,
         ));
       }
       if (r.result!.totalTaxMinor != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'quaderno.tax.total.minor',
           r.result!.totalTaxMinor!,
         ));
       }
       if (r.result!.currency != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'quaderno.currency',
           r.result!.currency!,
         ));
       }
       if (r.result!.requestId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'quaderno.request.id',
           r.result!.requestId!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -195,13 +201,13 @@ Future<T> tracedQuaderno<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
